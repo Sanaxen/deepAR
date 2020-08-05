@@ -1,3 +1,4 @@
 # deepAR C#-application
-![C# application](.\images\image00.png)
+<img src="./images/image00.png"/>  
+
 
