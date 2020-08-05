@@ -827,9 +827,15 @@ namespace WindowsFormsApp1
             }
             if (sr != null) sr.Close();
 
-            listBox1.SelectedIndex = 1;
-            listBox2.SelectedIndex = 0;
-            listBox3.SelectedIndex = 2;
+            if (listBox1.Items.Count >= 2)
+            {
+                listBox1.SelectedIndex = 1;
+                listBox2.SelectedIndex = 0;
+            }
+            if (listBox1.Items.Count >= 3)
+            {
+                listBox3.SelectedIndex = 2;
+            }
         }
 
         private void input_format()
