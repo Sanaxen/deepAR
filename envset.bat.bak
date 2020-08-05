@@ -15,8 +15,8 @@ mkdir deepAR_application\wrk
 mkdir deepAR_application\script
 
 copy WindowsFormsApp1\WindowsFormsApp1\bin\Debug\*.exe deepAR_application\bin /v /y
-copy WindowsFormsApp1\WindowsFormsApp1\bin\script\*.* deepAR_application\script\*.* /v /y
-mkdir WindowsFormsApp1\WindowsFormsApp1\bin\wrk
+copy WindowsFormsApp1\WindowsFormsApp1\script\*.* deepAR_application\script\*.* /v /y
+mkdir WindowsFormsApp1\WindowsFormsApp1\wrk
 
 
 call setup_ini.bat
