@@ -52,7 +52,7 @@ namespace WindowsFormsApp1
                 }
                 if (sr != null) sr.Close();
             }
-            if ( backend != "")
+            if (backend != "")
             {
                 Rdir = backend + @"\bin\x64";
             }
@@ -73,8 +73,22 @@ namespace WindowsFormsApp1
                     }
                     PythonEnv += @"%PATH%";
                 }
-                if ( sr != null ) sr.Close();
+                if (sr != null) sr.Close();
 
+            }
+        }
+
+        void KillProcessTree(System.Diagnostics.Process process)
+        {
+            string taskkill = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "taskkill.exe");
+            using (var procKiller = new System.Diagnostics.Process())
+            {
+                procKiller.StartInfo.FileName = taskkill;
+                procKiller.StartInfo.Arguments = string.Format("/PID {0} /T /F", process.Id);
+                procKiller.StartInfo.CreateNoWindow = true;
+                procKiller.StartInfo.UseShellExecute = false;
+                procKiller.Start();
+                procKiller.WaitForExit();
             }
         }
 
@@ -104,8 +118,8 @@ namespace WindowsFormsApp1
         {
             System.IO.Directory.SetCurrentDirectory(wrkdir);
 
-            r_script.FileName = Rdir+@"\Rscript.exe";
-            r_script.Arguments = " "+ script;
+            r_script.FileName = Rdir + @"\Rscript.exe";
+            r_script.Arguments = " " + script;
             r_script.Arguments += args;
             r_script.UseShellExecute = false;
 
@@ -201,7 +215,8 @@ namespace WindowsFormsApp1
                 }
                 sc += "])\r\n";
                 sc += "\r\n";
-            }else
+            }
+            else
             {
                 sc += "df_train = df." + listBox1.Items[listBox1.SelectedIndices[0]].ToString() + "[:-predict_length]\r\n";
                 sc += "df_test = df." + listBox1.Items[listBox1.SelectedIndices[0]].ToString() + "[-(seq_length+predict_length):]\r\n";
@@ -230,14 +245,15 @@ namespace WindowsFormsApp1
             sc += " }],\r\n";
             sc += "    freq = freq_\r\n";
             if (listBox1.SelectedIndices.Count > 1)
-            { 
+            {
                 sc += ", one_dim_target = False)\r\n";
-            }else
+            }
+            else
             {
                 sc += ", one_dim_target = True)\r\n";
             }
             sc += "test_data = ListDataset(\r\n";
-            sc += "    [{ \"start\": df.index[0], \"target\":df_test";
+            sc += "    [{ \"start\": df.index[data_length-(seq_length+predict_length)], \"target\":df_test";
             if (listBox3.SelectedIndices.Count > 0)
             {
                 sc += ",\"feat_dynamic_real\": features_real_test,";
@@ -264,224 +280,99 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
-            button6_Click(sender, e);
-
-            System.IO.Directory.SetCurrentDirectory(wrkdir);
-            if (System.IO.File.Exists("tmp_deepARprediction1.png.png")) System.IO.File.Delete("tmp_deepARprediction1.png.png");
-            pictureBox1.Image = null;
-
-            train_mode = true;
-            if (process_train == null && System.IO.File.Exists("train_finish.txt"))
+            try
             {
-                System.IO.File.Delete("train_finish.txt");
-            }
+                button6_Click(sender, e);
 
-            string sc = "";
-#if false
-            sc += "import pandas as pd\r\n";
-            sc += "import matplotlib\r\n";
-            sc += "from matplotlib import pyplot as plt\r\n";
-            sc += "from gluonts.distribution.multivariate_gaussian import MultivariateGaussianOutput\r\n";
-            sc += "from gluonts.distribution.student_t import StudentTOutput\r\n";
-            sc += "from gluonts.distribution.neg_binomial import NegativeBinomialOutput\r\n";
-            sc += "from gluonts.distribution.piecewise_linear import PiecewiseLinearOutput\r\n";
-            sc += "import sys\r\n";
-            sc += "import numpy as np\r\n";
+                System.IO.Directory.SetCurrentDirectory(wrkdir);
+                if (System.IO.File.Exists("tmp_deepARprediction1.png")) System.IO.File.Delete("tmp_deepARprediction1.png.png");
+                pictureBox1.Image = null;
 
-            sc += "freq_ = \"" + textBox1.Text + "\"\r\n";
-            sc += "predict_length = " + numericUpDown3.Value.ToString() + "\r\n";
-            sc += "seq_length = " + numericUpDown4.Value.ToString() + "\r\n";
-            sc += "batch_size_ = " + numericUpDown6.Value.ToString() + "\r\n";
-            sc += "num_layers_ = " + numericUpDown7.Value.ToString() + "\r\n";
-            sc += "num_cells_ = " + numericUpDown8.Value.ToString() + "\r\n";
-            sc += "epochs_ = " + numericUpDown5.Value.ToString() + "\r\n";
-
-            sc += "df = pd.read_csv('tmp_deepAR_input.csv',index_col=0)\r\n";
-            sc += "data_length = len(df)\r\n";
-            sc += "\r\n";
-
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                for (int i = 0; i < listBox3.SelectedIndices.Count; i++)
+                train_mode = true;
+                if (process_train == null && System.IO.File.Exists("train_finish.txt"))
                 {
-                    sc += "feat" + (i + 1).ToString() + "= np.array(df." + listBox3.Items[listBox3.SelectedIndices[i]].ToString() + ").reshape((1,-1))\r\n";
+                    System.IO.File.Delete("train_finish.txt");
                 }
-                sc += "features_real = np.concatenate([";
-                for (int i = 0; i < listBox3.SelectedIndices.Count; i++)
+
+                string sc = "";
+                sc = deepar_common_code();
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "from gluonts.model.deepar import DeepAREstimator\r\n";
+                sc += "from gluonts.trainer import Trainer\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "estimator = DeepAREstimator(freq = freq_,\r\n";
+                sc += "    prediction_length = prediction_length_,\r\n";
+                sc += "    context_length = context_length_,\r\n";
+                sc += "    trainer = Trainer(epochs = epochs_, batch_size = batch_size_, ctx = 'cpu'),\r\n";
+                sc += "    num_layers = num_layers_,\r\n";
+                sc += "    num_cells = num_cells_,\r\n";
+                sc += "    use_feat_dynamic_real = ";
+                if (listBox3.SelectedIndices.Count >= 1)
                 {
-                    sc += "feat" + (i + 1).ToString();
-                    if (i < listBox3.SelectedIndices.Count - 1) sc += ",";
+                    sc += "True";
                 }
-                sc += "], axis = 0)\r\n";
+                else
+                {
+                    sc += "False";
+                }
+                sc += ",\r\n";
+                sc += "    # distr_output=StudentTOutput()\r\n";
+                sc += "    # distr_output=NegativeBinomialOutput()\r\n";
+                sc += "    # distr_output=PiecewiseLinearOutput()\r\n";
+                if (listBox1.SelectedIndices.Count > 1)
+                {
+                    sc += "    distr_output = MultivariateGaussianOutput(dim = dim)\r\n";
+                }
+                sc += ")\r\n";
+                sc += "predictor = estimator.train(training_data = training_data, num_workers = 1)\r\n";
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "#export Trained model\r\n";
+                sc += "from pathlib import Path\r\n";
+                sc += "predictor.serialize(Path(\"./\"))\r\n";
+
+                sc += "from gluonts.dataset.util import to_pandas\r\n";
+                sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
+                sc += "#forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction1.png')\r\n";
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "import os\r\n";
+                sc += "multiprocessing.freeze_support()\r\n";
+                sc += "path_w = 'train_finish.txt'\r\n";
+
+                sc += "s = 'New file'\r\n";
+                sc += "with open(path_w, mode= 'w') as f:\r\n";
+                sc += "    f.write(s)\r\n";
+
+                using (System.IO.StreamWriter writer = new System.IO.StreamWriter("train_deepAR.py", false, Encoding.UTF8))
+                {
+                    writer.Write(sc);
+                }
+                //return;
+
+                app_train.FileName = python_venv + "\\python.exe";
+                app_train.Arguments = " " + "train_deepAR.py";
+                app_train.UseShellExecute = false;
+
+                String envPath = Environment.GetEnvironmentVariable("Path");
+                Environment.SetEnvironmentVariable("Path", PythonEnv);
+
+                process_train = System.Diagnostics.Process.Start(app_train);
+                timer1.Start();
             }
-            sc += "\r\n";
-
-            sc += "df_train = pd.concat([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+            catch
             {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[:-predict_length]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
+                timer1.Stop();
             }
-            sc += "], axis = 1)\r\n";
-            sc += "\r\n";
-
-            sc += "df_test = pd.concat([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
-            {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[-(seq_length+predict_length):]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
-            }
-            sc += "], axis = 1)\r\n";
-            sc += "\r\n";
-            sc += "pd.DataFrame(df_train).to_csv('train0.csv')\r\n";
-            sc += "pd.DataFrame(df_test).to_csv('test0.csv')\r\n";
-            sc += "\r\n";
-
-            sc += "df_train = pd.DataFrame([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
-            {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[:-predict_length]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
-            }
-            sc += "])\r\n";
-            sc += "\r\n";
-
-            sc += "df_test = pd.DataFrame([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
-            {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[-(seq_length+predict_length):]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
-            }
-            sc += "])\r\n";
-            sc += "\r\n";
-
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                sc += "features_real_train = features_real[:,:-predict_length]\r\n";
-                sc += "features_real_test = features_real[:, -(seq_length + predict_length):]\r\n";
-            }
-            sc += "context_length_ = seq_length\r\n";
-            sc += "prediction_length_ = predict_length\r\n";
-
-            sc += "index_len = len(df_train.index)\r\n";
-
-            sc += "from gluonts.dataset.common import ListDataset\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "training_data = ListDataset(\r\n";
-            sc += "    [{ \"start\": df.index[0], \"target\": df_train";
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                sc += ",\"feat_dynamic_real\": features_real_train,";
-            }
-            sc += " }],\r\n";
-            sc += "    freq = freq_";
-            if (listBox1.SelectedIndices.Count > 1)
-            {
-                sc += ", one_dim_target = False)\r\n";
-            }
-            else
-            {
-                sc += ", one_dim_target = True)\r\n";
-            }
-
-            sc += "test_data = ListDataset(\r\n";
-            sc += "    [{ \"start\": df.index[0], \"target\":df_test";
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                sc += ",\"feat_dynamic_real\": features_real_test,";
-            }
-            sc += "} ],\r\n";
-            sc += "    freq = freq_";
-            if (listBox1.SelectedIndices.Count > 1)
-            {
-                sc += ", one_dim_target = False)\r\n";
-            }
-            else
-            {
-                sc += ", one_dim_target = True)\r\n";
-            }
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "dim = " + listBox1.SelectedIndices.Count.ToString() + "\r\n";
-            sc += "import multiprocessing\r\n";
-            sc += forecast_plot + "\r\n";
-#else
-            sc = deepar_common_code();
-
-#endif
-
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "from gluonts.model.deepar import DeepAREstimator\r\n";
-            sc += "from gluonts.trainer import Trainer\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "estimator = DeepAREstimator(freq = freq_,\r\n";
-            sc += "    prediction_length = prediction_length_,\r\n";
-            sc += "    context_length = context_length_,\r\n";
-            sc += "    trainer = Trainer(epochs = epochs_, batch_size = batch_size_, ctx = 'cpu'),\r\n";
-            sc += "    num_layers = num_layers_,\r\n";
-            sc += "    num_cells = num_cells_,\r\n";
-            sc += "    use_feat_dynamic_real = ";
-            if (listBox3.SelectedIndices.Count >= 1)
-            {
-                sc += "True";
-            }else
-            {
-                sc += "False";
-            }
-            sc += ",\r\n";
-            sc += "    # distr_output=StudentTOutput()\r\n";
-            sc += "    # distr_output=NegativeBinomialOutput()\r\n";
-            sc += "    # distr_output=PiecewiseLinearOutput()\r\n";
-            if (listBox1.SelectedIndices.Count > 1)
-            {
-                sc += "    distr_output = MultivariateGaussianOutput(dim = dim)\r\n";
-            }
-            sc += ")\r\n";
-            sc += "predictor = estimator.train(training_data = training_data, num_workers = 1)\r\n";
-
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "#export Trained model\r\n";
-            sc += "from pathlib import Path\r\n";
-            sc += "predictor.serialize(Path(\"./\"))\r\n";
-
-            sc += "from gluonts.dataset.util import to_pandas\r\n";
-            sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
-
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
-            sc += "#forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction1.png')\r\n";
-
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "import os\r\n";
-            sc += "multiprocessing.freeze_support()\r\n";
-            sc += "path_w = 'train_finish.txt'\r\n";
-
-            sc += "s = 'New file'\r\n";
-            sc += "with open(path_w, mode= 'w') as f:\r\n";
-            sc += "    f.write(s)\r\n";
-
-            using (System.IO.StreamWriter writer = new System.IO.StreamWriter("train_deepAR.py", false, Encoding.UTF8))
-            {
-                writer.Write(sc);
-            }
-            //return;
-
-            app_train.FileName = python_venv+"\\python.exe";
-            app_train.Arguments = " "+ "train_deepAR.py";
-            app_train.UseShellExecute = false;
-
-            String envPath = Environment.GetEnvironmentVariable("Path");
-            Environment.SetEnvironmentVariable("Path",PythonEnv);
-
-            process_train = System.Diagnostics.Process.Start(app_train);
-            timer1.Start();
-            //process.WaitForExit();
         }
 
         void processClose(System.Diagnostics.Process process)
@@ -497,6 +388,7 @@ namespace WindowsFormsApp1
                 if (!process.HasExited)
                 {
                     process.Kill();
+                    //KillProcessTree(process);
                     if (train_mode)
                         process_train = null;
                     else
@@ -544,244 +436,117 @@ namespace WindowsFormsApp1
 
         private void button4_Click(object sender, EventArgs e)
         {
-            System.IO.Directory.SetCurrentDirectory(wrkdir);
-            if (System.IO.File.Exists("tmp_deepARprediction5.png")) System.IO.File.Delete("tmp_deepARprediction5.png");
-            pictureBox1.Image = null;
-
-            if (System.IO.File.Exists("tmp_deepAR_prediction.csv")) System.IO.File.Delete("tmp_deepAR_prediction.csv");
-            if (System.IO.File.Exists("tmp_deepAR_prediction2.csv")) System.IO.File.Delete("tmp_deepAR_prediction2.csv");
-
-            train_mode = false;
-            if (process_test == null && System.IO.File.Exists("test_finish.txt"))
+            try
             {
-                System.IO.File.Delete("test_finish.txt");
-            }
+                System.IO.Directory.SetCurrentDirectory(wrkdir);
+                if (System.IO.File.Exists("tmp_deepARprediction5.png")) System.IO.File.Delete("tmp_deepARprediction5.png");
+                pictureBox1.Image = null;
 
-            string sc = "";
-#if false
-            sc += "import pandas as pd\r\n";
-            sc += "import matplotlib\r\n";
-            sc += "from matplotlib import pyplot as plt\r\n";
-            sc += "from gluonts.distribution.multivariate_gaussian import MultivariateGaussianOutput\r\n";
-            sc += "from gluonts.distribution.student_t import StudentTOutput\r\n";
-            sc += "from gluonts.distribution.neg_binomial import NegativeBinomialOutput\r\n";
-            sc += "from gluonts.distribution.piecewise_linear import PiecewiseLinearOutput\r\n";
-            sc += "import sys\r\n";
-            sc += "import numpy as np\r\n";
+                if (System.IO.File.Exists("tmp_deepAR_prediction.csv")) System.IO.File.Delete("tmp_deepAR_prediction.csv");
+                if (System.IO.File.Exists("tmp_deepAR_prediction2.csv")) System.IO.File.Delete("tmp_deepAR_prediction2.csv");
 
-            sc += "freq_ = \"" + textBox1.Text + "\"\r\n";
-            sc += "predict_length = " + numericUpDown3.Value.ToString() + "\r\n";
-            sc += "seq_length = " + numericUpDown4.Value.ToString() + "\r\n";
-            sc += "batch_size_ = " + numericUpDown6.Value.ToString() + "\r\n";
-            sc += "num_layers_ = " + numericUpDown7.Value.ToString() + "\r\n";
-            sc += "num_cells_ = " + numericUpDown8.Value.ToString() + "\r\n";
-            sc += "epochs_ = " + numericUpDown5.Value.ToString() + "\r\n";
-
-            sc += "df = pd.read_csv('tmp_deepAR_input.csv',index_col=0)\r\n";
-            sc += "data_length = len(df)\r\n";
-            sc += "\r\n";
-
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                for (int i = 0; i < listBox3.SelectedIndices.Count; i++)
+                train_mode = false;
+                if (process_test == null && System.IO.File.Exists("test_finish.txt"))
                 {
-                    sc += "feat" + (i + 1).ToString() + "= np.array(df." + listBox3.Items[listBox3.SelectedIndices[i]].ToString() + ").reshape((1,-1))\r\n";
+                    System.IO.File.Delete("test_finish.txt");
                 }
-                sc += "features_real = np.concatenate([";
-                for (int i = 0; i < listBox3.SelectedIndices.Count; i++)
+
+                string sc = "";
+                sc = deepar_common_code();
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "from gluonts.model.deepar import DeepAREstimator\r\n";
+                sc += "#from gluonts.trainer import Trainer\r\n";
+                sc += "from gluonts.model.predictor import Predictor\r\n";
+                sc += "from pathlib import Path\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "#import Trained model\r\n";
+                sc += "predictor = Predictor.deserialize(Path(\"./\"))\r\n";
+
+                sc += "\r\n";
+                sc += "\r\n";
+
+                sc += "from gluonts.dataset.util import to_pandas\r\n";
+                sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
+                sc += "forecast_it, ts_it = make_evaluation_predictions(\r\n";
+                sc += "   dataset= test_data,    # test dataset\r\n";
+                sc += "   predictor= predictor,  # predictor\r\n";
+                sc += "   num_samples= 100,      # number of sample paths we want for evaluation\r\n";
+                sc += ")\r\n";
+
+                sc += "tss = list(ts_it)\r\n";
+                sc += "ts_entry = tss[0]\r\n";
+                sc += "forecasts = list(forecast_it)\r\n";
+                sc += "forecast_entry = forecasts[0]\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "print(f\"Number of sample paths: {forecast_entry.num_samples}\")\r\n";
+                sc += "print(f\"Dimension of samples: {forecast_entry.samples.shape}\")\r\n";
+                sc += "print(f\"Start date of the forecast window: {forecast_entry.start_date}\")\r\n";
+                sc += "print(f\"Frequency of the time series: {forecast_entry.freq}\")\r\n";
+                sc += "print(f\"Mean of the future window: {forecast_entry.mean}\")\r\n";
+                sc += "print(f\"0.5-quantile (median) of the future window: {forecast_entry.quantile(0.5)}\")\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "#forecast_plot((seq_length+predict_length), dim, predictor, training_data, 'tmp_deepARprediction5.png')\r\n";
+                sc += "forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction5.png')\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+
+                sc += "import numpy as np\r\n";
+                sc += "pd.DataFrame(forecast_entry.mean).to_csv('deepAR_prediction.csv')\r\n";
+                sc += "\r\n";
+                sc += "from gluonts.evaluation import Evaluator\r\n";
+                sc += "from gluonts.evaluation import MultivariateEvaluator\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+
+                if (listBox1.SelectedIndices.Count == 1)
                 {
-                    sc += "feat" + (i + 1).ToString();
-                    if (i < listBox3.SelectedIndices.Count - 1) sc += ",";
+                    sc += "evaluator = Evaluator(quantiles=[0.5], seasonality=1)\r\n";
                 }
-                sc += "], axis = 0)\r\n";
-            }
-            sc += "\r\n";
+                else
+                {
+                    sc += "evaluator = MultivariateEvaluator(quantiles=[0.5], seasonality=1)\r\n";
+                }
+                sc += "agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_data))\r\n";
+                sc += "agg_metrics_df = pd.DataFrame.from_dict(agg_metrics, orient=\"index\")\r\n";
+                sc += "agg_metrics_df.to_csv('agg_metrics.csv')\r\n";
+                sc += "\r\n";
+                sc += "#item_metrics.plot(x='MSIS', y='MASE', kind='scatter', c=item_metrics.index, cmap='Accent')\r\n";
+                sc += "#plt.grid(which='both')\r\n";
+                sc += "#plt.show()\r\n";
+                sc += "\r\n";
+                sc += "import os\r\n";
+                sc += "multiprocessing.freeze_support()\r\n";
+                sc += "path_w = 'test_finish.txt'\r\n";
+                sc += "\r\n";
+                sc += "s = 'New file'\r\n";
+                sc += "with open(path_w, mode='w') as f:\r\n";
+                sc += "    f.write(s)\r\n";
 
-            sc += "df_train = pd.concat([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                using (System.IO.StreamWriter writer = new System.IO.StreamWriter("test_deepAR.py", false, Encoding.UTF8))
+                {
+                    writer.Write(sc);
+                }
+                //return;
+
+                app_test.FileName = python_venv + "\\python.exe";
+                app_test.Arguments = " " + "test_deepAR.py";
+                app_test.UseShellExecute = false;
+
+                String envPath = Environment.GetEnvironmentVariable("Path");
+                Environment.SetEnvironmentVariable("Path", PythonEnv);
+
+                timer1.Start();
+                process_test = System.Diagnostics.Process.Start(app_test);
+            }
+            catch
             {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[:-predict_length]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
+                timer1.Stop();
             }
-            sc += "], axis = 1)\r\n";
-            sc += "\r\n";
-
-            sc += "df_test = pd.concat([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
-            {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[-(seq_length+predict_length):]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
-            }
-            sc += "], axis = 1)\r\n";
-            sc += "\r\n";
-            sc += "pd.DataFrame(df_train).to_csv('train0.csv')\r\n";
-            sc += "pd.DataFrame(df_test).to_csv('test0.csv')\r\n";
-            sc += "\r\n";
-
-            sc += "df_train = pd.DataFrame([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
-            {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[:-predict_length]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
-            }
-            sc += "])\r\n";
-            sc += "\r\n";
-
-            sc += "df_test = pd.DataFrame([";
-            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
-            {
-                sc += "df." + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "[-(seq_length+predict_length):]";
-                if (i < listBox1.SelectedIndices.Count - 1) sc += ",";
-            }
-            sc += "])\r\n";
-            sc += "\r\n";
-
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                sc += "features_real_train = features_real[:,:-predict_length]\r\n";
-                sc += "features_real_test = features_real[:, -(seq_length + predict_length):]\r\n";
-            }
-            sc += "context_length_ = seq_length\r\n";
-            sc += "prediction_length_ = predict_length\r\n";
-
-            sc += "index_len = len(df_train.index)\r\n";
-
-            sc += "from gluonts.dataset.common import ListDataset\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "training_data = ListDataset(\r\n";
-            sc += "    [{ \"start\": df.index[0], \"target\": df_train";
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                sc += ",\"feat_dynamic_real\": features_real_train,";
-            }
-            sc += " }],\r\n";
-            sc += "    freq = freq_";
-            if (listBox1.SelectedIndices.Count > 1)
-            {
-                sc += ", one_dim_target = False)\r\n";
-            }
-            else
-            {
-                sc += ", one_dim_target = True)\r\n";
-            }
-            sc += "test_data = ListDataset(\r\n";
-            sc += "    [{ \"start\": df.index[0], \"target\":df_test";
-            if (listBox3.SelectedIndices.Count > 0)
-            {
-                sc += ",\"feat_dynamic_real\": features_real_test,";
-            }
-            sc += "} ],\r\n";
-            sc += "    freq = freq_";
-            if (listBox1.SelectedIndices.Count > 1)
-            {
-                sc += ", one_dim_target = False)\r\n";
-            }
-            else
-            {
-                sc += ", one_dim_target = True)\r\n";
-            }
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "dim = " + listBox1.SelectedIndices.Count.ToString() + "\r\n";
-            sc += "import multiprocessing\r\n";
-            sc += forecast_plot + "\r\n";
-#else
-            sc = deepar_common_code();
-#endif
-
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "from gluonts.model.deepar import DeepAREstimator\r\n";
-            sc += "#from gluonts.trainer import Trainer\r\n";
-            sc += "from gluonts.model.predictor import Predictor\r\n";
-            sc += "from pathlib import Path\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "#import Trained model\r\n";
-            sc += "predictor = Predictor.deserialize(Path(\"./\"))\r\n";
-
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "#export Trained model\r\n";
-            sc += "from pathlib import Path\r\n";
-            sc += "predictor.serialize(Path(\"./\"))\r\n";
-
-            sc += "from gluonts.dataset.util import to_pandas\r\n";
-            sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
-            sc += "forecast_it, ts_it = make_evaluation_predictions(\r\n";
-            sc += "   dataset= test_data,    # test dataset\r\n";
-            sc += "   predictor= predictor,  # predictor\r\n";
-            sc += "   num_samples= 100,      # number of sample paths we want for evaluation\r\n";
-            sc += ")\r\n";
-
-            sc += "tss = list(ts_it)\r\n";
-            sc += "ts_entry = tss[0]\r\n";
-            sc += "forecasts = list(forecast_it)\r\n";
-            sc += "forecast_entry = forecasts[0]\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "print(f\"Number of sample paths: {forecast_entry.num_samples}\")\r\n";
-            sc += "print(f\"Dimension of samples: {forecast_entry.samples.shape}\")\r\n";
-            sc += "print(f\"Start date of the forecast window: {forecast_entry.start_date}\")\r\n";
-            sc += "print(f\"Frequency of the time series: {forecast_entry.freq}\")\r\n";
-            sc += "print(f\"Mean of the future window: {forecast_entry.mean}\")\r\n";
-            sc += "print(f\"0.5-quantile (median) of the future window: {forecast_entry.quantile(0.5)}\")\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-            sc += "forecast_plot((seq_length+predict_length), dim, predictor, training_data, 'tmp_deepARprediction5.png')\r\n";
-            sc += "#forecast_plot((seq_length+predict_length),dim, predictor, test_data, 'tmp_deepARprediction5.png')\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-
-            sc += "import numpy as np\r\n";
-            sc += "pd.DataFrame(forecast_entry.mean).to_csv('deepAR_prediction.csv')\r\n";
-            sc += "\r\n";
-            sc += "from gluonts.evaluation import Evaluator\r\n";
-            sc += "from gluonts.evaluation import MultivariateEvaluator\r\n";
-            sc += "\r\n";
-            sc += "\r\n";
-
-            if (listBox1.SelectedIndices.Count == 1)
-            {
-                sc += "evaluator = Evaluator(quantiles=[0.5], seasonality=1)\r\n";
-            }
-            else
-            {
-                sc += "evaluator = MultivariateEvaluator(quantiles=[0.5], seasonality=1)\r\n";
-            }
-            sc += "agg_metrics, item_metrics = evaluator(iter(tss), iter(forecasts), num_series=len(test_data))\r\n";
-            sc += "agg_metrics_df = pd.DataFrame.from_dict(agg_metrics, orient=\"index\")\r\n";
-            sc += "agg_metrics_df.to_csv('agg_metrics.csv')\r\n";
-            sc += "\r\n";
-            sc += "#item_metrics.plot(x='MSIS', y='MASE', kind='scatter', c=item_metrics.index, cmap='Accent')\r\n";
-            sc += "#plt.grid(which='both')\r\n";
-            sc += "#plt.show()\r\n";
-            sc += "\r\n";
-            sc += "import os\r\n";
-            sc += "multiprocessing.freeze_support()\r\n";
-            sc += "path_w = 'test_finish.txt'\r\n";
-            sc += "\r\n";
-            sc += "s = 'New file'\r\n";
-            sc += "with open(path_w, mode='w') as f:\r\n";
-            sc += "    f.write(s)\r\n";
-
-            using (System.IO.StreamWriter writer = new System.IO.StreamWriter("test_deepAR.py", false, Encoding.UTF8))
-            {
-                writer.Write(sc);
-            }
-            //return;
-
-            app_test.FileName = python_venv + "\\python.exe";
-            app_test.Arguments = " "+ "test_deepAR.py";
-            app_test.UseShellExecute = false;
-
-            String envPath = Environment.GetEnvironmentVariable("Path");
-            Environment.SetEnvironmentVariable("Path", PythonEnv);
-
-            timer1.Start();
-            process_test = System.Diagnostics.Process.Start(app_test);
-            //process.WaitForExit();
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -792,7 +557,7 @@ namespace WindowsFormsApp1
 
         private void button5_Click(object sender, EventArgs e)
         {
-            if ( openFileDialog1.ShowDialog() != DialogResult.OK)
+            if (openFileDialog1.ShowDialog() != DialogResult.OK)
             {
                 return;
             }
@@ -905,7 +670,7 @@ namespace WindowsFormsApp1
 
             sc += "df <- read.csv(file_name, header=T, stringsAsFactors = F, na.strings = c(\"\", \"NA\"))\r\n";
             sc += "df$ds<-as.Date(df$ds)\r\n";
-            
+
             sc += "df_pred <- read.csv( \"deepAR_prediction.csv\", header=T, stringsAsFactors = F, na.strings = c(\"\", \"NA\"))\r\n";
             sc += "df_test <- read.csv(\"test0.csv\", header = T, stringsAsFactors = F, na.strings = c(\"\", \"NA\"))\r\n";
             sc += "df_train <- read.csv(\"train0.csv\", header = T, stringsAsFactors = F, na.strings = c(\"\", \"NA\"))\r\n";
@@ -918,7 +683,7 @@ namespace WindowsFormsApp1
 
             for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
             {
-                sc += "df_prediction<-cbind(df_prediction, data.frame(as.numeric(df_pred[," + (i+2).ToString()+"])))\r\n";
+                sc += "df_prediction<-cbind(df_prediction, data.frame(as.numeric(df_pred[," + (i + 2).ToString() + "])))\r\n";
             }
             sc += "colnames(df_prediction) <- colnames(df_train)\r\n";
             sc += "write.csv(df_prediction,\"tmp_deepAR_prediction.csv\",row.names = FALSE)\r\n";
@@ -1139,7 +904,7 @@ namespace WindowsFormsApp1
         public void load_model(string modelfile, object sender, EventArgs e)
         {
             System.IO.File.Copy(modelfile, "prediction_net-0000.params", true);
-            System.IO.File.Copy(modelfile+"."+"type.txt", "type.txt", true);
+            System.IO.File.Copy(modelfile + "." + "type.txt", "type.txt", true);
             System.IO.File.Copy(modelfile + "." + "prediction_net-network.json", "prediction_net-network.json", true);
             System.IO.File.Copy(modelfile + "." + "input_transform.json", "input_transform.json", true);
             System.IO.File.Copy(modelfile + "." + "parameters.json", "parameters.json", true);
@@ -1203,6 +968,14 @@ namespace WindowsFormsApp1
             this.TopMost = false;
         }
 
+        string clipValueTxt(string value)
+        {
+            float v = float.Parse(value) * 1000.0f;
+            int i = (int)v;
+            v = (float)i / 1000.0f;
+
+            return v.ToString();
+        }
         void agg_metrics()
         {
             rmse = "unknown";
@@ -1225,27 +998,27 @@ namespace WindowsFormsApp1
                         if (ss[0].IndexOf("RMSE") >= 0)
                         {
                             rmse = ss[1].Replace("\r", "").Replace("\r\n", "");
-                            label2.Text = "RMSE=" + rmse;
+                            label2.Text = "RMSE = " + clipValueTxt(rmse);
                         }
                         if (ss[0].IndexOf("MSE") >= 0)
                         {
                             MSE = ss[1].Replace("\r", "").Replace("\r\n", "");
-                            label3.Text = "MSE=" + MSE;
+                            label3.Text = "MSE = " + clipValueTxt(MSE);
                         }
                         if (ss[0].IndexOf("MASE") >= 0)
                         {
                             MASE = ss[1].Replace("\r", "").Replace("\r\n", "");
-                            label12.Text = "MASE=" + MASE;
+                            label12.Text = "MASE = " + clipValueTxt(MASE);
                         }
                         if (ss[0].IndexOf("MAPE") >= 0)
                         {
                             MAPE = ss[1].Replace("\r", "").Replace("\r\n", "");
-                            label13.Text = "MAPE=" + MAPE;
+                            label13.Text = "MAPE = " + clipValueTxt(MAPE);
                         }
                         if (ss[0].IndexOf("NRMSE") >= 0)
                         {
                             NRMSE = ss[1].Replace("\r", "").Replace("\r\n", "");
-                            label15.Text = "NRMSE=" + NRMSE;
+                            label15.Text = "NRMSE = " + clipValueTxt(NRMSE);
                         }
                     }
                     sr.Close();
@@ -1287,11 +1060,11 @@ namespace WindowsFormsApp1
                     }
                     if (System.IO.File.Exists(wrkdir + "\\prediction_net-network.json"))
                     {
-                        System.IO.File.Copy(wrkdir + "\\prediction_net-network.json", save_name+"."+ "prediction_net-network.json", true);
+                        System.IO.File.Copy(wrkdir + "\\prediction_net-network.json", save_name + "." + "prediction_net-network.json", true);
                     }
                     if (System.IO.File.Exists(wrkdir + "\\type.txt"))
                     {
-                        System.IO.File.Copy(wrkdir + "\\type.txt", save_name+"."+"type.txt", true);
+                        System.IO.File.Copy(wrkdir + "\\type.txt", save_name + "." + "type.txt", true);
                     }
                     if (System.IO.File.Exists(wrkdir + "\\input_transform.json"))
                     {
@@ -1351,6 +1124,185 @@ namespace WindowsFormsApp1
                 return;
             }
             load_model(openFileDialog1.FileName, sender, e);
+        }
+
+        private void button14_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                button6_Click(sender, e);
+
+                System.IO.Directory.SetCurrentDirectory(wrkdir);
+                if (!System.IO.File.Exists("tmp_deepARprediction1.png")) return;
+
+                if (System.IO.File.Exists("tmp_deepARprediction2.png")) System.IO.File.Delete("tmp_deepARprediction2.png");
+                pictureBox1.Image = null;
+
+                train_mode = true;
+                if (process_train == null && System.IO.File.Exists("train_finish.txt"))
+                {
+                    System.IO.File.Delete("train_finish.txt");
+                }
+
+                string sc = "";
+                sc = deepar_common_code();
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "from gluonts.dataset.util import to_pandas\r\n";
+                sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
+                sc += "from gluonts.model.predictor import Predictor\r\n";
+                sc += "from pathlib import Path\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "#import Trained model\r\n";
+                sc += "predictor = Predictor.deserialize(Path(\"./\"))\r\n";
+
+                sc += "\r\n";
+                sc += "\r\n";
+
+                sc += "from gluonts.dataset.util import to_pandas\r\n";
+                sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
+                sc += "forecast_it, ts_it = make_evaluation_predictions(\r\n";
+                sc += "   dataset= training_data,    # test dataset\r\n";
+                sc += "   predictor= predictor,  # predictor\r\n";
+                sc += "   num_samples= 100,      # number of sample paths we want for evaluation\r\n";
+                sc += ")\r\n";
+
+                sc += "tss = list(ts_it)\r\n";
+                sc += "ts_entry = tss[0]\r\n";
+                sc += "forecasts = list(forecast_it)\r\n";
+                sc += "forecast_entry = forecasts[0]\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "print(f\"Number of sample paths: {forecast_entry.num_samples}\")\r\n";
+                sc += "print(f\"Dimension of samples: {forecast_entry.samples.shape}\")\r\n";
+                sc += "print(f\"Start date of the forecast window: {forecast_entry.start_date}\")\r\n";
+                sc += "print(f\"Frequency of the time series: {forecast_entry.freq}\")\r\n";
+                sc += "print(f\"Mean of the future window: {forecast_entry.mean}\")\r\n";
+                sc += "print(f\"0.5-quantile (median) of the future window: {forecast_entry.quantile(0.5)}\")\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction2.png')\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "import os\r\n";
+                sc += "multiprocessing.freeze_support()\r\n";
+                sc += "path_w = 'train_finish.txt'\r\n";
+
+                sc += "s = 'New file'\r\n";
+                sc += "with open(path_w, mode= 'w') as f:\r\n";
+                sc += "    f.write(s)\r\n";
+
+                using (System.IO.StreamWriter writer = new System.IO.StreamWriter("train_deepAR_plt.py", false, Encoding.UTF8))
+                {
+                    writer.Write(sc);
+                }
+                //return;
+
+                app_train.FileName = python_venv + "\\python.exe";
+                app_train.Arguments = " " + "train_deepAR_plt.py";
+                app_train.UseShellExecute = false;
+
+                String envPath = Environment.GetEnvironmentVariable("Path");
+                Environment.SetEnvironmentVariable("Path", PythonEnv);
+
+                process_train = System.Diagnostics.Process.Start(app_train);
+                timer1.Start();
+            }
+            catch
+            {
+                timer1.Stop();
+            }
+        }
+
+        private void button15_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                button6_Click(sender, e);
+
+                System.IO.Directory.SetCurrentDirectory(wrkdir);
+                if (!System.IO.File.Exists("tmp_deepARprediction5.png")) return;
+
+                if (System.IO.File.Exists("tmp_deepARprediction6.png")) System.IO.File.Delete("tmp_deepARprediction6.png");
+                pictureBox1.Image = null;
+
+                train_mode = false;
+                if (process_train == null && System.IO.File.Exists("test_finish.txt"))
+                {
+                    System.IO.File.Delete("test_finish.txt");
+                }
+
+                string sc = "";
+                sc = deepar_common_code();
+
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "from gluonts.dataset.util import to_pandas\r\n";
+                sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
+                sc += "from gluonts.model.predictor import Predictor\r\n";
+                sc += "from pathlib import Path\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "#import Trained model\r\n";
+                sc += "predictor = Predictor.deserialize(Path(\"./\"))\r\n";
+
+                sc += "\r\n";
+                sc += "\r\n";
+
+                sc += "from gluonts.dataset.util import to_pandas\r\n";
+                sc += "from gluonts.evaluation.backtest import make_evaluation_predictions\r\n";
+                sc += "forecast_it, ts_it = make_evaluation_predictions(\r\n";
+                sc += "   dataset= test_data,    # test dataset\r\n";
+                sc += "   predictor= predictor,  # predictor\r\n";
+                sc += "   num_samples= 100,      # number of sample paths we want for evaluation\r\n";
+                sc += ")\r\n";
+
+                sc += "tss = list(ts_it)\r\n";
+                sc += "ts_entry = tss[0]\r\n";
+                sc += "forecasts = list(forecast_it)\r\n";
+                sc += "forecast_entry = forecasts[0]\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "print(f\"Number of sample paths: {forecast_entry.num_samples}\")\r\n";
+                sc += "print(f\"Dimension of samples: {forecast_entry.samples.shape}\")\r\n";
+                sc += "print(f\"Start date of the forecast window: {forecast_entry.start_date}\")\r\n";
+                sc += "print(f\"Frequency of the time series: {forecast_entry.freq}\")\r\n";
+                sc += "print(f\"Mean of the future window: {forecast_entry.mean}\")\r\n";
+                sc += "print(f\"0.5-quantile (median) of the future window: {forecast_entry.quantile(0.5)}\")\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction6.png')\r\n";
+                sc += "\r\n";
+                sc += "\r\n";
+                sc += "import os\r\n";
+                sc += "multiprocessing.freeze_support()\r\n";
+                sc += "path_w = 'test_finish.txt'\r\n";
+
+                sc += "s = 'New file'\r\n";
+                sc += "with open(path_w, mode= 'w') as f:\r\n";
+                sc += "    f.write(s)\r\n";
+
+                using (System.IO.StreamWriter writer = new System.IO.StreamWriter("test_deepAR_plt.py", false, Encoding.UTF8))
+                {
+                    writer.Write(sc);
+                }
+                //return;
+
+                app_train.FileName = python_venv + "\\python.exe";
+                app_train.Arguments = " " + "test_deepAR_plt.py";
+                app_train.UseShellExecute = false;
+
+                String envPath = Environment.GetEnvironmentVariable("Path");
+                Environment.SetEnvironmentVariable("Path", PythonEnv);
+
+                process_test = System.Diagnostics.Process.Start(app_train);
+                timer1.Start();
+            }
+            catch {
+                timer1.Stop();
+            }
         }
     }
 }

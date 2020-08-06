@@ -17,7 +17,8 @@ def forecast_plot(plot_start, dim, predictor, data, outpu_image_file):
             y.copy_dim(i).plot(color= 'g', prediction_intervals= prediction_intervals)
             plt.grid(which='both')
             plt.legend(legend, loc='upper left')
-
+            plt.axvline(df.index[data_length-(seq_length+predict_length)], color='b') # end of train dataset
+            plt.axvline(df.index[data_length-(predict_length)], color='r') # end of train dataset
 
     plt.savefig(outpu_image_file)
     plt.show()
