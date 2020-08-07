@@ -13,6 +13,7 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
+        string InputFileName = "";
         public static string MyPath = "";   //exeが置いてあるパス
         string wrkdir = @"C:\Users\bccat\Desktop\deepARapp\WindowsFormsApp1\WindowsFormsApp1\bin";
         string Rdir = @"D:\Program Files\R\R-3.6.1\bin\x64";
@@ -76,7 +77,32 @@ namespace WindowsFormsApp1
                 if (sr != null) sr.Close();
 
             }
-        }
+            
+            string [] argv = Environment.GetCommandLineArgs();
+            int argc = argv.Length;
+
+            if ( argc >= 2 )
+            {
+                string dir = argv[1];
+                try
+                {
+                    System.IO.Directory.SetCurrentDirectory(dir);
+                    wrkdir = dir;
+                }
+                catch { }
+            }
+            if ( argc >= 3)
+            {
+                string file = InputFileName;
+                InputFileName = argv[2];
+                try
+                {
+                    ListBoxReset();
+                    input_format();
+                }
+                catch { }
+            }
+       }
 
         void KillProcessTree(System.Diagnostics.Process process)
         {
@@ -393,8 +419,8 @@ namespace WindowsFormsApp1
                         process_train = null;
                     else
                         process_test = null;
-                    timer1.Stop();
                 }
+                timer1.Stop();
             }
         }
 
@@ -555,12 +581,8 @@ namespace WindowsFormsApp1
             timer1.Stop();
         }
 
-        private void button5_Click(object sender, EventArgs e)
+        void ListBoxReset()
         {
-            if (openFileDialog1.ShowDialog() != DialogResult.OK)
-            {
-                return;
-            }
             System.IO.Directory.SetCurrentDirectory(wrkdir);
 
             if (System.IO.File.Exists("header.txt"))
@@ -568,7 +590,7 @@ namespace WindowsFormsApp1
                 System.IO.File.Delete("header.txt");
             }
             string args = " ";
-            args += " " + openFileDialog1.FileName;
+            args += " " + InputFileName;
             Rscript(Script_path + "inputFileSelect.r", args);
 
             if (!System.IO.File.Exists("header.txt"))
@@ -602,17 +624,21 @@ namespace WindowsFormsApp1
                 listBox3.SelectedIndex = 2;
             }
         }
+        private void button5_Click(object sender, EventArgs e)
+        {
+            System.IO.Directory.SetCurrentDirectory(wrkdir);
+            if (openFileDialog1.ShowDialog() != DialogResult.OK)
+            {
+                return;
+            }
+			ListBoxReset();
+        }
 
         private void input_format()
         {
             System.IO.Directory.SetCurrentDirectory(wrkdir);
 
-            if (System.IO.File.Exists("header.txt"))
-            {
-                System.IO.File.Delete("header.txt");
-            }
-
-            string filename = openFileDialog1.FileName;
+            string filename = InputFileName;
             filename = filename.Replace("\\", "\\\\");
 
             string wk = wrkdir.Replace("\\", "\\\\");
