@@ -306,6 +306,11 @@ namespace WindowsFormsApp1
 
         private void button1_Click(object sender, EventArgs e)
         {
+            if ( numericUpDown3.Value > numericUpDown4.Value)
+            {
+                MessageBox.Show("Length of the prediction horizon >= context_length", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
             try
             {
                 button6_Click(sender, e);
