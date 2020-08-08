@@ -1023,30 +1023,35 @@ namespace WindowsFormsApp1
                         var ss = s.Split(',');
                         if (ss.Length == 0) continue;
 
+                        if (ss[0].IndexOf("NRMSE") >= 0)
+                        {
+                            NRMSE = ss[1].Replace("\r", "").Replace("\r\n", "");
+                            label15.Text = "NRMSE = " + clipValueTxt(NRMSE);
+                            continue;
+                        }
                         if (ss[0].IndexOf("RMSE") >= 0)
                         {
                             rmse = ss[1].Replace("\r", "").Replace("\r\n", "");
                             label2.Text = "RMSE = " + clipValueTxt(rmse);
+                            continue;
                         }
                         if (ss[0].IndexOf("MSE") >= 0)
                         {
                             MSE = ss[1].Replace("\r", "").Replace("\r\n", "");
                             label3.Text = "MSE = " + clipValueTxt(MSE);
+                            continue;
                         }
                         if (ss[0].IndexOf("MASE") >= 0)
                         {
                             MASE = ss[1].Replace("\r", "").Replace("\r\n", "");
                             label12.Text = "MASE = " + clipValueTxt(MASE);
+                            continue;
                         }
                         if (ss[0].IndexOf("MAPE") >= 0)
                         {
                             MAPE = ss[1].Replace("\r", "").Replace("\r\n", "");
                             label13.Text = "MAPE = " + clipValueTxt(MAPE);
-                        }
-                        if (ss[0].IndexOf("NRMSE") >= 0)
-                        {
-                            NRMSE = ss[1].Replace("\r", "").Replace("\r\n", "");
-                            label15.Text = "NRMSE = " + clipValueTxt(NRMSE);
+                            continue;
                         }
                     }
                     sr.Close();

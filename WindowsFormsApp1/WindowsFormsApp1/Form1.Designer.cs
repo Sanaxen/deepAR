@@ -69,6 +69,8 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.panel7 = new System.Windows.Forms.Panel();
+            this.button17 = new System.Windows.Forms.Button();
+            this.button16 = new System.Windows.Forms.Button();
             this.label14 = new System.Windows.Forms.Label();
             this.label10 = new System.Windows.Forms.Label();
             this.label11 = new System.Windows.Forms.Label();
@@ -83,8 +85,6 @@
             this.panel5 = new System.Windows.Forms.Panel();
             this.panel6 = new System.Windows.Forms.Panel();
             this.splitter2 = new System.Windows.Forms.Splitter();
-            this.button16 = new System.Windows.Forms.Button();
-            this.button17 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown3)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown4)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown5)).BeginInit();
@@ -447,7 +447,7 @@
             this.panel3.Location = new System.Drawing.Point(0, 0);
             this.panel3.Margin = new System.Windows.Forms.Padding(4);
             this.panel3.Name = "panel3";
-            this.panel3.Size = new System.Drawing.Size(880, 105);
+            this.panel3.Size = new System.Drawing.Size(884, 105);
             this.panel3.TabIndex = 31;
             // 
             // button15
@@ -548,7 +548,7 @@
             this.panel4.Location = new System.Drawing.Point(0, 0);
             this.panel4.Margin = new System.Windows.Forms.Padding(4);
             this.panel4.Name = "panel4";
-            this.panel4.Size = new System.Drawing.Size(948, 850);
+            this.panel4.Size = new System.Drawing.Size(944, 850);
             this.panel4.TabIndex = 32;
             // 
             // label15
@@ -622,8 +622,28 @@
             this.panel7.Location = new System.Drawing.Point(4, 280);
             this.panel7.Margin = new System.Windows.Forms.Padding(4);
             this.panel7.Name = "panel7";
-            this.panel7.Size = new System.Drawing.Size(944, 570);
+            this.panel7.Size = new System.Drawing.Size(940, 570);
             this.panel7.TabIndex = 30;
+            // 
+            // button17
+            // 
+            this.button17.Location = new System.Drawing.Point(243, 25);
+            this.button17.Name = "button17";
+            this.button17.Size = new System.Drawing.Size(29, 20);
+            this.button17.TabIndex = 118;
+            this.button17.Text = "rev";
+            this.button17.UseVisualStyleBackColor = true;
+            this.button17.Click += new System.EventHandler(this.button17_Click);
+            // 
+            // button16
+            // 
+            this.button16.Location = new System.Drawing.Point(208, 26);
+            this.button16.Name = "button16";
+            this.button16.Size = new System.Drawing.Size(29, 20);
+            this.button16.TabIndex = 117;
+            this.button16.Text = "all";
+            this.button16.UseVisualStyleBackColor = true;
+            this.button16.Click += new System.EventHandler(this.button16_Click);
             // 
             // label14
             // 
@@ -712,11 +732,12 @@
             // 
             // splitter4
             // 
+            this.splitter4.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.splitter4.Dock = System.Windows.Forms.DockStyle.Top;
             this.splitter4.Location = new System.Drawing.Point(0, 0);
             this.splitter4.Margin = new System.Windows.Forms.Padding(4);
             this.splitter4.Name = "splitter4";
-            this.splitter4.Size = new System.Drawing.Size(944, 12);
+            this.splitter4.Size = new System.Drawing.Size(940, 10);
             this.splitter4.TabIndex = 0;
             this.splitter4.TabStop = false;
             // 
@@ -732,7 +753,8 @@
             // 
             // splitter1
             // 
-            this.splitter1.Location = new System.Drawing.Point(948, 0);
+            this.splitter1.BackColor = System.Drawing.SystemColors.ActiveCaption;
+            this.splitter1.Location = new System.Drawing.Point(944, 0);
             this.splitter1.Margin = new System.Windows.Forms.Padding(4);
             this.splitter1.Name = "splitter1";
             this.splitter1.Size = new System.Drawing.Size(4, 850);
@@ -745,10 +767,10 @@
             this.panel5.Controls.Add(this.splitter2);
             this.panel5.Controls.Add(this.panel3);
             this.panel5.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel5.Location = new System.Drawing.Point(952, 0);
+            this.panel5.Location = new System.Drawing.Point(948, 0);
             this.panel5.Margin = new System.Windows.Forms.Padding(4);
             this.panel5.Name = "panel5";
-            this.panel5.Size = new System.Drawing.Size(880, 850);
+            this.panel5.Size = new System.Drawing.Size(884, 850);
             this.panel5.TabIndex = 34;
             // 
             // panel6
@@ -760,39 +782,20 @@
             this.panel6.Location = new System.Drawing.Point(0, 109);
             this.panel6.Margin = new System.Windows.Forms.Padding(4);
             this.panel6.Name = "panel6";
-            this.panel6.Size = new System.Drawing.Size(880, 741);
+            this.panel6.Size = new System.Drawing.Size(884, 741);
             this.panel6.TabIndex = 33;
             // 
             // splitter2
             // 
+            this.splitter2.BackColor = System.Drawing.SystemColors.ActiveCaption;
             this.splitter2.Cursor = System.Windows.Forms.Cursors.HSplit;
             this.splitter2.Dock = System.Windows.Forms.DockStyle.Top;
             this.splitter2.Location = new System.Drawing.Point(0, 105);
             this.splitter2.Margin = new System.Windows.Forms.Padding(4);
             this.splitter2.Name = "splitter2";
-            this.splitter2.Size = new System.Drawing.Size(880, 4);
+            this.splitter2.Size = new System.Drawing.Size(884, 4);
             this.splitter2.TabIndex = 32;
             this.splitter2.TabStop = false;
-            // 
-            // button16
-            // 
-            this.button16.Location = new System.Drawing.Point(208, 26);
-            this.button16.Name = "button16";
-            this.button16.Size = new System.Drawing.Size(29, 20);
-            this.button16.TabIndex = 117;
-            this.button16.Text = "all";
-            this.button16.UseVisualStyleBackColor = true;
-            this.button16.Click += new System.EventHandler(this.button16_Click);
-            // 
-            // button17
-            // 
-            this.button17.Location = new System.Drawing.Point(243, 25);
-            this.button17.Name = "button17";
-            this.button17.Size = new System.Drawing.Size(29, 20);
-            this.button17.TabIndex = 118;
-            this.button17.Text = "rev";
-            this.button17.UseVisualStyleBackColor = true;
-            this.button17.Click += new System.EventHandler(this.button17_Click);
             // 
             // Form1
             // 
