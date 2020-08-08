@@ -77,11 +77,11 @@ namespace WindowsFormsApp1
                 if (sr != null) sr.Close();
 
             }
-            
-            string [] argv = Environment.GetCommandLineArgs();
+
+            string[] argv = Environment.GetCommandLineArgs();
             int argc = argv.Length;
 
-            if ( argc >= 2 )
+            if (argc >= 2)
             {
                 string dir = argv[1];
                 try
@@ -91,7 +91,7 @@ namespace WindowsFormsApp1
                 }
                 catch { }
             }
-            if ( argc >= 3)
+            if (argc >= 3)
             {
                 string file = InputFileName;
                 InputFileName = argv[2];
@@ -102,7 +102,7 @@ namespace WindowsFormsApp1
                 }
                 catch { }
             }
-       }
+        }
 
         void KillProcessTree(System.Diagnostics.Process process)
         {
@@ -631,7 +631,9 @@ namespace WindowsFormsApp1
             {
                 return;
             }
-			ListBoxReset();
+            InputFileName = openFileDialog1.FileName;
+
+            ListBoxReset();
         }
 
         private void input_format()
@@ -1326,8 +1328,41 @@ namespace WindowsFormsApp1
                 process_test = System.Diagnostics.Process.Start(app_train);
                 timer1.Start();
             }
-            catch {
+            catch
+            {
                 timer1.Stop();
+            }
+        }
+
+        private void button16_Click(object sender, EventArgs e)
+        {
+            for (int i = 0; i < listBox1.Items.Count; i++)
+            {
+                listBox1.SetSelected(i, true);
+            }
+        }
+
+        private void button17_Click(object sender, EventArgs e)
+        {
+            int[] array = new int[listBox1.Items.Count];
+            for (int i = 0; i < listBox1.Items.Count; i++)
+            {
+                array[i] = -1;
+            }
+            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+            {
+                array[i] = listBox1.SelectedIndices[i];
+            }
+
+            for (int i = 0; i < listBox1.Items.Count; i++)
+            {
+                listBox1.SetSelected(i, true);
+            }
+
+            for (int i = 0; i < listBox1.Items.Count; i++)
+            {
+                int idx = array[i];
+                if (idx >= 0) listBox1.SetSelected(idx, false);
             }
         }
     }
