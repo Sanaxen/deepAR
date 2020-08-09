@@ -801,6 +801,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.AutoSize = true;
             this.ClientSize = new System.Drawing.Size(1832, 850);
             this.Controls.Add(this.panel5);
             this.Controls.Add(this.splitter1);

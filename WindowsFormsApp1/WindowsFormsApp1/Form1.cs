@@ -299,6 +299,14 @@ namespace WindowsFormsApp1
             sc += "dim = " + listBox1.SelectedIndices.Count.ToString() + "\r\n";
             sc += "import multiprocessing\r\n";
 
+            sc += "titles = []\r\n";
+            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+            {
+                sc += "titles.append(\"" + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "\")\r\n";
+            }
+            sc += "\r\n";
+            sc += "\r\n";
+
             sc += forecast_plot + "\r\n";
 
             return sc;

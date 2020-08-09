@@ -13,6 +13,7 @@ def forecast_plot(plot_start, dim, predictor, data, outpu_image_file):
     for x, y in zip(ts_it, forecast_it) :
         for i in range(dim) :
             plt.subplot(dim, 1, i + 1)
+            plt.title(titles[i])
             x[i][-(plot_start):].plot()
             y.copy_dim(i).plot(color= 'g', prediction_intervals= prediction_intervals)
             plt.grid(which='both')
