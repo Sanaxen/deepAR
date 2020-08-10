@@ -733,6 +733,25 @@ namespace WindowsFormsApp1
             sc += "write.csv(df_tot, \"tmp_deepAR_prediction2.csv\", row.names = FALSE)\r\n";
             sc += "#Sys.sleep(100)\r\n";
 
+            sc += "df2<-cbind(df[,c(1:("+ listBox1.SelectedIndices.Count.ToString()+"+1))], df_tot[,c(2:ncol(df_tot))])\r\n";
+            sc += "colnames(df2)<-c('ds',";
+            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+            {
+                sc += "'" + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "'";
+                sc += ",";
+            }
+            for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+            {
+                sc += "'predict_" + listBox1.Items[listBox1.SelectedIndices[i]].ToString() + "'";
+                if (i < listBox1.SelectedIndices.Count - 1)
+                {
+                    sc += ",";
+                }
+            }
+            sc += ")\r\n";
+            sc += "write.csv(df2, \"tmp_deepAR_prediction3.csv\", row.names = FALSE)\r\n";
+            sc += "#Sys.sleep(100)\r\n";
+
             using (System.IO.StreamWriter writer = new System.IO.StreamWriter("outputFmt.r", false, Encoding.GetEncoding("Shift_JIS")))
             {
                 writer.Write(sc);
