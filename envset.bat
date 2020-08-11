@@ -11,7 +11,7 @@ PATH=%python_venv%;%python_venv%\%PYTHON_VENV1%;%python_venv%\%PYTHON_VENV2%;%py
 copy setup_ini.bat deepAR_application /v /y
 
 mkdir deepAR_application\bin
-mkdir deepAR_application\wrk
+mkdir deepAR_application\work
 mkdir deepAR_application\script
 
 copy WindowsFormsApp1\WindowsFormsApp1\bin\Debug\*.exe deepAR_application\bin /v /y
