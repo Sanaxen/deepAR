@@ -426,6 +426,18 @@
             this.panel2.Size = new System.Drawing.Size(172, 249);
             this.panel2.TabIndex = 29;
             // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+            this.checkBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
+            this.checkBox1.Location = new System.Drawing.Point(4, 227);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(93, 19);
+            this.checkBox1.TabIndex = 37;
+            this.checkBox1.Text = "use GPU";
+            this.checkBox1.UseVisualStyleBackColor = true;
+            // 
             // pictureBox1
             // 
             this.pictureBox1.Location = new System.Drawing.Point(110, 52);
@@ -798,18 +810,6 @@
             this.splitter2.Size = new System.Drawing.Size(884, 4);
             this.splitter2.TabIndex = 32;
             this.splitter2.TabStop = false;
-            // 
-            // checkBox1
-            // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
-            this.checkBox1.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(192)))), ((int)(((byte)(0)))), ((int)(((byte)(0)))));
-            this.checkBox1.Location = new System.Drawing.Point(4, 227);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(93, 19);
-            this.checkBox1.TabIndex = 37;
-            this.checkBox1.Text = "use GPU";
-            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
