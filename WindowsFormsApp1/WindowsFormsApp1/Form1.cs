@@ -58,25 +58,7 @@ namespace WindowsFormsApp1
                 Rdir = backend + @"\bin\x64";
             }
 
-            if (System.IO.File.Exists(MyPath + "..\\python_venv.txt"))
-            {
-                System.IO.StreamReader sr = new System.IO.StreamReader(MyPath + "..\\python_venv.txt", Encoding.GetEncoding("SHIFT_JIS"));
-                if (sr != null)
-                {
-                    string line = sr.ReadLine().Replace("\n", "").Replace("\r", "");
-                    python_venv = line;
-
-                    PythonEnv = python_venv + ";";
-                    while (sr.EndOfStream == false)
-                    {
-                        line = sr.ReadLine().Replace("\n", "").Replace("\r", "");
-                        PythonEnv += python_venv + line + ";";
-                    }
-                    PythonEnv += @"%PATH%";
-                }
-                if (sr != null) sr.Close();
-
-            }
+            setPythonEnv();
 
             string[] argv = Environment.GetCommandLineArgs();
             int argc = argv.Length;
@@ -101,6 +83,43 @@ namespace WindowsFormsApp1
                     input_format();
                 }
                 catch { }
+            }
+        }
+
+        void setPythonEnv()
+        {
+            if (System.IO.File.Exists(MyPath + "..\\python_venv.txt"))
+            {
+                System.IO.StreamReader sr = new System.IO.StreamReader(MyPath + "..\\python_venv.txt", Encoding.GetEncoding("SHIFT_JIS"));
+                if (sr != null)
+                {
+                    string line = sr.ReadLine().Replace("\n", "").Replace("\r", "");
+                    python_venv = line;
+
+                    checkBox1.Enabled = false;
+                    string cuda = python_venv + "\\cudart64_102.dll";
+                    string cudnn = python_venv + "\\cudnn64_8.dll";
+
+                    if ( System.IO.File.Exists(cuda) && System.IO.File.Exists(cudnn))
+                    {
+                        checkBox1.Enabled = true;
+                    }
+
+                    cuda = python_venv + "\\cudart64_110.dll";
+                    if (System.IO.File.Exists(cuda) && System.IO.File.Exists(cudnn))
+                    {
+                        checkBox1.Enabled = true;
+                    }
+                    PythonEnv = python_venv + ";";
+                    while (sr.EndOfStream == false)
+                    {
+                        line = sr.ReadLine().Replace("\n", "").Replace("\r", "");
+                        PythonEnv += python_venv + line + ";";
+                    }
+                    PythonEnv += @"%PATH%";
+                }
+                if (sr != null) sr.Close();
+
             }
         }
 
@@ -345,7 +364,14 @@ namespace WindowsFormsApp1
                 sc += "estimator = DeepAREstimator(freq = freq_,\r\n";
                 sc += "    prediction_length = prediction_length_,\r\n";
                 sc += "    context_length = context_length_,\r\n";
-                sc += "    trainer = Trainer(epochs = epochs_, batch_size = batch_size_, ctx = 'cpu'),\r\n";
+                sc += "    trainer = Trainer(epochs = epochs_, batch_size = batch_size_";
+                if (checkBox1.Checked)
+                {
+                    sc += ", ctx = 'gpu'),\r\n";
+                }else
+                {
+                    sc += ", ctx = 'cpu'),\r\n";
+                }
                 sc += "    num_layers = num_layers_,\r\n";
                 sc += "    num_cells = num_cells_,\r\n";
                 sc += "    use_feat_dynamic_real = ";
@@ -397,6 +423,7 @@ namespace WindowsFormsApp1
                     writer.Write(sc);
                 }
                 //return;
+                setPythonEnv();
 
                 app_train.FileName = python_venv + "\\python.exe";
                 app_train.Arguments = " " + "train_deepAR.py";
@@ -571,6 +598,7 @@ namespace WindowsFormsApp1
                     writer.Write(sc);
                 }
                 //return;
+                setPythonEnv();
 
                 app_test.FileName = python_venv + "\\python.exe";
                 app_test.Arguments = " " + "test_deepAR.py";
