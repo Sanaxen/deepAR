@@ -139,12 +139,18 @@ namespace WindowsFormsApp1
 
         public static System.Drawing.Image CreateImage(string filename)
         {
-            System.IO.FileStream fs = new System.IO.FileStream(
-                filename,
-                System.IO.FileMode.Open,
-                System.IO.FileAccess.Read);
-            System.Drawing.Image img = System.Drawing.Image.FromStream(fs);
-            fs.Close();
+            System.Drawing.Image img = null;
+            try
+            {
+                System.IO.FileStream fs = new System.IO.FileStream(
+                    filename,
+                    System.IO.FileMode.Open,
+                    System.IO.FileAccess.Read);
+                img = System.Drawing.Image.FromStream(fs);
+                fs.Close();
+            }catch
+            {
+            }
             return img;
         }
 
@@ -405,9 +411,21 @@ namespace WindowsFormsApp1
 
                 sc += "\r\n";
                 sc += "\r\n";
-                sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
-                sc += "#forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction1.png')\r\n";
 
+                if (listBox1.SelectedIndices.Count >= 4)
+                {
+                    int n = listBox1.SelectedIndices.Count;
+                    int i = 0;
+                    while (n > 4)
+                    {
+                        sc += "forecast_plot("+(i*4).ToString()+","+(i*4+4).ToString()+", predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
+                        n -= 4;
+                        i++;
+                    }
+                }else
+                {
+                    sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
+                }
                 sc += "\r\n";
                 sc += "\r\n";
                 sc += "import os\r\n";
