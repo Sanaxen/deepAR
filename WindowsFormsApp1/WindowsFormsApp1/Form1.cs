@@ -32,6 +32,7 @@ namespace WindowsFormsApp1
         public bool train_mode = true;
         public Form1 form1 = null;
 
+        int plot_step = 3;
         public Form1()
         {
             InitializeComponent();
@@ -346,10 +347,16 @@ namespace WindowsFormsApp1
             }
             try
             {
+                trackBar1.Visible = false;
+                plot_step = (int)numericUpDown1.Value;
                 button6_Click(sender, e);
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                if (System.IO.File.Exists("tmp_deepARprediction1.png")) System.IO.File.Delete("tmp_deepARprediction1.png.png");
+
+                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                {
+                    if (System.IO.File.Exists("tmp_deepARprediction1"+i.ToString()+".png")) System.IO.File.Delete("tmp_deepARprediction1"+i.ToString()+".png");
+                }
                 pictureBox1.Image = null;
 
                 train_mode = true;
@@ -412,19 +419,26 @@ namespace WindowsFormsApp1
                 sc += "\r\n";
                 sc += "\r\n";
 
-                if (listBox1.SelectedIndices.Count >= 4)
+                if (listBox1.SelectedIndices.Count >= plot_step)
                 {
                     int n = listBox1.SelectedIndices.Count;
-                    int i = 0;
-                    while (n > 4)
+                    int k = 0;
+                    for (int i = 0; i < n / plot_step; i += plot_step)
                     {
-                        sc += "forecast_plot("+(i*4).ToString()+","+(i*4+4).ToString()+", predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
-                        n -= 4;
-                        i++;
+                        sc += "forecast_plot(" +plot_step.ToString()+","+ (i * plot_step).ToString() + "," + (i * plot_step + plot_step).ToString() + ", 0, dim, predictor, training_data, 'tmp_deepARprediction1" + "_" + k.ToString() + ".png')\r\n";
+                        k++;
                     }
-                }else
+                    if (n % plot_step != 0)
+                    {
+                        n = n - n % plot_step;
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + n.ToString() + ",dim, 0, dim, predictor, training_data, 'tmp_deepARprediction1" + "_" + k.ToString() + ".png')\r\n";
+                    }
+                    trackBar1.Visible = true;
+                    trackBar1.Maximum = k;
+                }
+                else
                 {
-                    sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction1.png')\r\n";
+                    sc += "forecast_plot(1, 0, dim, 0,dim, predictor, training_data, 'tmp_deepARprediction1_0.png')\r\n";
                 }
                 sc += "\r\n";
                 sc += "\r\n";
@@ -494,9 +508,9 @@ namespace WindowsFormsApp1
                 processClose(process_train);
                 if (System.IO.File.Exists("train_finish.txt"))
                 {
-                    if (System.IO.File.Exists("tmp_deepARprediction1.png"))
+                    if (System.IO.File.Exists("tmp_deepARprediction1_0.png"))
                     {
-                        pictureBox1.Image = CreateImage("tmp_deepARprediction1.png");
+                        pictureBox1.Image = CreateImage("tmp_deepARprediction1_0.png");
                     }
                     System.IO.File.Delete("train_finish.txt");
                 }
@@ -509,9 +523,9 @@ namespace WindowsFormsApp1
                     output_format();
                     System.IO.File.Delete("test_finish.txt");
 
-                    if (System.IO.File.Exists("tmp_deepARprediction5.png"))
+                    if (System.IO.File.Exists("tmp_deepARprediction5_0.png"))
                     {
-                        pictureBox1.Image = CreateImage("tmp_deepARprediction5.png");
+                        pictureBox1.Image = CreateImage("tmp_deepARprediction5_0.png");
                     }
                     agg_metrics();
                 }
@@ -522,8 +536,14 @@ namespace WindowsFormsApp1
         {
             try
             {
+                trackBar1.Visible = false;
+                plot_step = (int)numericUpDown1.Value;
+
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                if (System.IO.File.Exists("tmp_deepARprediction5.png")) System.IO.File.Delete("tmp_deepARprediction5.png");
+                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                {
+                    if (System.IO.File.Exists("tmp_deepARprediction5" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction5" + i.ToString() + ".png");
+                }
                 pictureBox1.Image = null;
 
                 if (System.IO.File.Exists("tmp_deepAR_prediction.csv")) System.IO.File.Delete("tmp_deepAR_prediction.csv");
@@ -575,7 +595,28 @@ namespace WindowsFormsApp1
                 sc += "\r\n";
                 sc += "\r\n";
                 sc += "#forecast_plot((seq_length+predict_length), dim, predictor, training_data, 'tmp_deepARprediction5.png')\r\n";
-                sc += "forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction5.png')\r\n";
+                sc += "#forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction5.png')\r\n";
+                if (listBox1.SelectedIndices.Count >= 3)
+                {
+                    int n = listBox1.SelectedIndices.Count;
+                    int k = 0;
+                    for (int i = 0; i < n / plot_step; i += plot_step)
+                    {
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + (i * plot_step).ToString() + "," + (i * plot_step + plot_step).ToString() + ", 0, dim, predictor, test_data, 'tmp_deepARprediction5" + "_" + k.ToString() + ".png')\r\n";
+                        k++;
+                    }
+                    if (n % plot_step != 0)
+                    {
+                        n = n - n % plot_step;
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + n.ToString() + ",dim, 0, dim, predictor, test_data, 'tmp_deepARprediction5" + "_" + k.ToString() + ".png')\r\n";
+                    }
+                    trackBar1.Visible = true;
+                    trackBar1.Maximum = k;
+                }
+                else
+                {
+                    sc += "forecast_plot(1, 0, dim, 0,dim, predictor, test_data, 'tmp_deepARprediction5_0.png')\r\n";
+                }
                 sc += "\r\n";
                 sc += "\r\n";
 
@@ -1241,10 +1282,15 @@ namespace WindowsFormsApp1
         {
             try
             {
+                trackBar1.Visible = false;
+                plot_step = (int)numericUpDown1.Value;
                 button6_Click(sender, e);
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                if (!System.IO.File.Exists("tmp_deepARprediction1.png")) return;
+                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                {
+                    if (System.IO.File.Exists("tmp_deepARprediction1" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction1" + i.ToString() + ".png");
+                }
 
                 if (System.IO.File.Exists("tmp_deepARprediction2.png")) System.IO.File.Delete("tmp_deepARprediction2.png");
                 pictureBox1.Image = null;
@@ -1294,7 +1340,27 @@ namespace WindowsFormsApp1
                 sc += "print(f\"0.5-quantile (median) of the future window: {forecast_entry.quantile(0.5)}\")\r\n";
                 sc += "\r\n";
                 sc += "\r\n";
-                sc += "forecast_plot(0,dim, predictor, training_data, 'tmp_deepARprediction2.png')\r\n";
+                if (listBox1.SelectedIndices.Count >= 3)
+                {
+                    int n = listBox1.SelectedIndices.Count;
+                    int k = 0;
+                    for (int i = 0; i < n / plot_step; i += plot_step)
+                    {
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + (i * plot_step).ToString() + "," + (i * plot_step + plot_step).ToString() + ", 0, dim, predictor, training_data, 'tmp_deepARprediction1" + "_" + k.ToString() + ".png')\r\n";
+                        k++;
+                    }
+                    if (n % plot_step != 0)
+                    {
+                        n = n - n % plot_step;
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + n.ToString() + ",dim, 0, dim, predictor, training_data, 'tmp_deepARprediction1" + "_" + k.ToString() + ".png')\r\n";
+                    }
+                    trackBar1.Visible = true;
+                    trackBar1.Maximum = k;
+                }
+                else
+                {
+                    sc += "forecast_plot(1, 0, dim, 0,dim, predictor, training_data, 'tmp_deepARprediction1_0.png')\r\n";
+                }
                 sc += "\r\n";
                 sc += "\r\n";
                 sc += "import os\r\n";
@@ -1331,10 +1397,15 @@ namespace WindowsFormsApp1
         {
             try
             {
+                trackBar1.Visible = false;
+                plot_step = (int)numericUpDown1.Value;
                 button6_Click(sender, e);
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                if (!System.IO.File.Exists("tmp_deepARprediction5.png")) return;
+                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                {
+                    if (System.IO.File.Exists("tmp_deepARprediction5" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction1" + i.ToString() + ".png");
+                }
 
                 if (System.IO.File.Exists("tmp_deepARprediction6.png")) System.IO.File.Delete("tmp_deepARprediction6.png");
                 pictureBox1.Image = null;
@@ -1384,7 +1455,27 @@ namespace WindowsFormsApp1
                 sc += "print(f\"0.5-quantile (median) of the future window: {forecast_entry.quantile(0.5)}\")\r\n";
                 sc += "\r\n";
                 sc += "\r\n";
-                sc += "forecast_plot(0,dim, predictor, test_data, 'tmp_deepARprediction6.png')\r\n";
+                if (listBox1.SelectedIndices.Count >= plot_step)
+                {
+                    int n = listBox1.SelectedIndices.Count;
+                    int k = 0;
+                    for (int i = 0; i < n / plot_step; i += plot_step)
+                    {
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + (i * plot_step).ToString() + "," + (i * plot_step + plot_step).ToString() + ", 0, dim, predictor, test_data, 'tmp_deepARprediction5" + "_" + k.ToString() + ".png')\r\n";
+                        k++;
+                    }
+                    if (n % plot_step != 0)
+                    {
+                        n = n - n % plot_step;
+                        sc += "forecast_plot(" + plot_step.ToString() + "," + n.ToString() + ",dim, 0, dim, predictor, test_data, 'tmp_deepARprediction5" + "_" + k.ToString() + ".png')\r\n";
+                    }
+                    trackBar1.Visible = true;
+                    trackBar1.Maximum = k;
+                }
+                else
+                {
+                    sc += "forecast_plot(1, 0, dim, 0,dim, predictor, test_data, 'tmp_deepARprediction5_0.png')\r\n";
+                }
                 sc += "\r\n";
                 sc += "\r\n";
                 sc += "import os\r\n";
@@ -1447,6 +1538,39 @@ namespace WindowsFormsApp1
                 int idx = array[i];
                 if (idx >= 0) listBox1.SetSelected(idx, false);
             }
+        }
+
+        private void trackBar1_Scroll(object sender, EventArgs e)
+        {
+            if (train_mode)
+            {
+                string filename = "tmp_deepARprediction1_" + trackBar1.Value.ToString() + ".png";
+                if (System.IO.File.Exists(filename))
+                {
+                    pictureBox1.Image = CreateImage(filename);
+                }
+            }else
+            {
+                string filename = "tmp_deepARprediction5_" + trackBar1.Value.ToString() + ".png";
+                if (System.IO.File.Exists(filename))
+                {
+                    pictureBox1.Image = CreateImage(filename);
+                }
+            }
+        }
+
+        private void button18_Click(object sender, EventArgs e)
+        {
+            if (trackBar1.Value == trackBar1.Maximum) return;
+            trackBar1.Value += 1;
+            trackBar1_Scroll(sender, e);
+        }
+
+        private void button19_Click(object sender, EventArgs e)
+        {
+            if (trackBar1.Value == 0) return;
+            trackBar1.Value -= 1;
+            trackBar1_Scroll(sender, e);
         }
     }
 }
