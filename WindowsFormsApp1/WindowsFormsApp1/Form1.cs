@@ -925,14 +925,20 @@ namespace WindowsFormsApp1
         {
             if (_ImageView == null) _ImageView = new ImageView();
             _ImageView.form1 = this.form1;
-            string file = "tmp_deepARprediction1.png";
-            if (!train_mode)
+
+            string filename = "";
+            if (train_mode)
             {
-                file = "tmp_deepARprediction1.png";
+                filename = "tmp_deepARprediction1_" + trackBar1.Value.ToString() + ".png";
             }
-            if (System.IO.File.Exists(file))
+            else
             {
-                _ImageView.pictureBox1.ImageLocation = file;
+                filename = "tmp_deepARprediction5_" + trackBar1.Value.ToString() + ".png";
+            }
+
+            if (System.IO.File.Exists(filename))
+            {
+                _ImageView.pictureBox1.Image = CreateImage(filename);
                 _ImageView.pictureBox1.SizeMode = PictureBoxSizeMode.Zoom;
                 _ImageView.pictureBox1.Dock = DockStyle.Fill;
                 _ImageView.Show();
