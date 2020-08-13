@@ -379,6 +379,7 @@ namespace WindowsFormsApp1
                 sc += "    prediction_length = prediction_length_,\r\n";
                 sc += "    context_length = context_length_,\r\n";
                 sc += "    trainer = Trainer(epochs = epochs_, batch_size = batch_size_";
+                sc += " ,learning_rate=" + textBox2.Text;
                 if (checkBox1.Checked)
                 {
                     sc += ", ctx = 'gpu'),\r\n";
@@ -397,13 +398,15 @@ namespace WindowsFormsApp1
                 {
                     sc += "False";
                 }
+                sc += ",dropout_rate=" + textBox3.Text+ "\r\n";
                 sc += ",\r\n";
-                sc += "    # distr_output=StudentTOutput()\r\n";
-                sc += "    # distr_output=NegativeBinomialOutput()\r\n";
-                sc += "    # distr_output=PiecewiseLinearOutput()\r\n";
-                if (listBox1.SelectedIndices.Count > 1)
+                sc += "    distr_output=" + comboBox1.Text;
+                if ( comboBox1.Text == "MultivariateGaussianOutput")
                 {
-                    sc += "    distr_output = MultivariateGaussianOutput(dim = dim)\r\n";
+                    sc += "(dim = dim)\r\n"; 
+                }else
+                {
+                    sc += "()\r\n";
                 }
                 sc += ")\r\n";
                 sc += "predictor = estimator.train(training_data = training_data, num_workers = 1)\r\n";
@@ -1584,6 +1587,27 @@ namespace WindowsFormsApp1
             if (trackBar1.Value == 0) return;
             trackBar1.Value -= 1;
             trackBar1_Scroll(sender, e);
+        }
+
+        private void listBox1_MouseDown(object sender, MouseEventArgs e)
+        {
+        }
+
+        private void listBox1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            comboBox1.Items.Clear();
+
+            if (listBox1.SelectedIndices.Count == 1)
+            {
+                comboBox1.Items.Add("StudentTOutput");
+                comboBox1.Items.Add("NegativeBinomialOutput");
+                comboBox1.Text = "StudentTOutput";
+            }
+            else
+            {
+                comboBox1.Items.Add("MultivariateGaussianOutput");
+                comboBox1.Text = "MultivariateGaussianOutput";
+            }
         }
     }
 }
