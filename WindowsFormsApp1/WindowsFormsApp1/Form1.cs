@@ -353,9 +353,10 @@ namespace WindowsFormsApp1
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
 
-                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                for (int i = 0; i < 10000; i++)
                 {
-                    if (System.IO.File.Exists("tmp_deepARprediction1_"+i.ToString()+".png")) System.IO.File.Delete("tmp_deepARprediction1_"+i.ToString()+".png");
+                    if (System.IO.File.Exists("tmp_deepARprediction1_" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction1_" + i.ToString() + ".png");
+                    else break;
                 }
                 pictureBox1.Image = null;
 
@@ -540,9 +541,10 @@ namespace WindowsFormsApp1
                 plot_step = (int)numericUpDown1.Value;
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                for (int i = 0; i < 10000; i++)
                 {
                     if (System.IO.File.Exists("tmp_deepARprediction5_" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction5_" + i.ToString() + ".png");
+                    else break;
                 }
                 pictureBox1.Image = null;
 
@@ -1294,9 +1296,10 @@ namespace WindowsFormsApp1
                 button6_Click(sender, e);
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                for (int i = 0; i < 10000; i++)
                 {
                     if (System.IO.File.Exists("tmp_deepARprediction1_" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction1_" + i.ToString() + ".png");
+                    else break;
                 }
 
                 if (System.IO.File.Exists("tmp_deepARprediction2.png")) System.IO.File.Delete("tmp_deepARprediction2.png");
@@ -1410,9 +1413,10 @@ namespace WindowsFormsApp1
                 button6_Click(sender, e);
 
                 System.IO.Directory.SetCurrentDirectory(wrkdir);
-                for (int i = 0; i < listBox1.SelectedIndices.Count; i++)
+                for (int i = 0; i < 10000; i++)
                 {
                     if (System.IO.File.Exists("tmp_deepARprediction5_" + i.ToString() + ".png")) System.IO.File.Delete("tmp_deepARprediction5_" + i.ToString() + ".png");
+                    else break;
                 }
 
                 if (System.IO.File.Exists("tmp_deepARprediction6.png")) System.IO.File.Delete("tmp_deepARprediction6.png");
