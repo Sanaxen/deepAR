@@ -345,8 +345,15 @@ namespace WindowsFormsApp1
                 MessageBox.Show("Length of the prediction horizon >= context_length", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
             try
             {
+                label2.Text = "";
+                label3.Text = "";
+                label12.Text = "";
+                label13.Text = "";
+                label15.Text = "";
+
                 trackBar1.Visible = false;
                 plot_step = (int)numericUpDown1.Value;
                 button6_Click(sender, e);
@@ -540,6 +547,12 @@ namespace WindowsFormsApp1
         {
             try
             {
+                label2.Text = "";
+                label3.Text = "";
+                label12.Text = "";
+                label13.Text = "";
+                label15.Text = "";
+
                 trackBar1.Visible = false;
                 plot_step = (int)numericUpDown1.Value;
 
