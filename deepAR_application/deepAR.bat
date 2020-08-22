@@ -20,6 +20,8 @@ echo %PYTHON_VENV5%>> python_venv.txt
 :pause
 set LDM="%BIN%\deepARapp.exe"
 
+if not "%2" == "" set WRK=%2
 
-start "DeepAR" "%LDM%" %WRK%
+:start "DeepAR" "%LDM%" "%WRK%" "%1"
 
+%LDM% "%WRK%" "%1"
