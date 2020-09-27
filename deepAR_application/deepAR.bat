@@ -1,6 +1,6 @@
 :@echo off
 
-call setup_ini.bat
+call ..\setup_ini.bat
 
 
 set BATPATH=%~dp0
