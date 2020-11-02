@@ -206,7 +206,12 @@ namespace WindowsFormsApp1
             sc += "num_cells_ = " + numericUpDown8.Value.ToString() + "\r\n";
             sc += "epochs_ = " + numericUpDown5.Value.ToString() + "\r\n";
 
-            sc += "df = pd.read_csv('tmp_deepAR_input.csv',index_col=0)\r\n";
+            sc += "df = pd.read_csv('tmp_deepAR_input.csv',index_col=0";
+            if ( comboBox2.Text != "")
+            {
+                sc += ",encoding='" + comboBox2.Text + "'";
+            }
+            sc += ")\r\n";
             sc += "data_length = len(df)\r\n";
             sc += "\r\n";
 
